@@ -1,0 +1,271 @@
+* {
+    box-sizing: border-box;
+    touch-action: manipulation;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100dvh;
+    background-color: #111;
+    color: #fff;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow-x: hidden;
+}
+
+.game-container {
+    background-color: #1a1a1a;
+    padding: clamp(12px, 3vw, 28px);
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.2);
+    border: 2px solid #333;
+    text-align: center;
+    width: min(96vw, 760px); /* Scales smoothly from 320px phones up to 760px on desktop/tablets */
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    50% { transform: translateX(6px); }
+    75% { transform: translateX(-6px); }
+}
+
+.damage-shake {
+    animation: shake 0.25s ease-in-out;
+    border-color: #ff3333 !important;
+    box-shadow: 0 0 25px rgba(255, 51, 51, 0.7) !important;
+}
+
+h1 {
+    color: #00ff00;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    margin: 0 0 clamp(10px, 2vh, 18px) 0;
+    font-size: clamp(1.2rem, 4.5vw, 2.1rem);
+    letter-spacing: 2px;
+}
+
+.hud {
+    display: flex;
+    justify-content: space-around;
+    background-color: #222;
+    padding: clamp(8px, 1.5vh, 12px);
+    border-radius: 6px;
+    font-size: clamp(0.95rem, 3.2vw, 1.3rem);
+    margin-bottom: clamp(10px, 2vh, 18px);
+    border: 1px solid #444;
+}
+
+.hp { color: #ff3333; font-weight: bold; }
+.score { color: #ffff33; font-weight: bold; }
+
+.battlefield {
+    background-color: #050505;
+    padding: clamp(8px, 2vw, 16px);
+    border-radius: 6px;
+    border: 1px dashed #00ff00;
+    margin-bottom: clamp(10px, 2vh, 18px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(4px, 1vh, 10px);
+}
+
+.lane {
+    display: flex;
+    align-items: center;
+    height: clamp(42px, 7vh, 62px);
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 0 4px;
+}
+
+.lane:hover, .lane:active {
+    background-color: rgba(0, 255, 0, 0.07);
+}
+
+.player-space {
+    width: clamp(64px, 14vw, 105px);
+    min-width: clamp(64px, 14vw, 105px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2px;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+}
+
+/* Custom Player PNG */
+.player {
+    display: inline-block;
+    width: clamp(28px, 6vw, 44px);
+    height: clamp(28px, 6vw, 44px);
+    background-image: url('waybig.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: drop-shadow(0 0 6px #00ff00);
+}
+
+/* Custom Zombie PNG */
+.zombie {
+    display: inline-block;
+    width: clamp(26px, 5.5vw, 42px);
+    height: clamp(26px, 5.5vw, 42px);
+    background-image: url('zombie.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    filter: drop-shadow(0 0 6px #ff3333);
+}
+
+.muzzle-flash {
+    color: #ffff00;
+    text-shadow: 0 0 12px #ff6600;
+    font-size: clamp(0.9rem, 2.8vw, 1.3rem);
+}
+
+/* Fluid 14-slot Grid: Left Arrow + 12 Lane Cells + Right Arrow */
+.track-space {
+    flex: 1;
+    display: grid;
+    grid-template-columns: auto repeat(12, 1fr) auto;
+    align-items: center;
+    justify-items: center;
+    color: #00ffff;
+    font-weight: bold;
+    font-size: clamp(0.85rem, 2.6vw, 1.3rem);
+}
+
+.track-dot {
+    color: #00aaaa;
+}
+
+.bullet {
+    color: #ffff00;
+    text-shadow: 0 0 10px #ffaa00, 0 0 20px #ffff00;
+    font-weight: bold;
+}
+
+.explosion {
+    color: #ff8800;
+    text-shadow: 0 0 12px #ff3300;
+}
+
+/* Touch Controls */
+.mobile-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.move-btns {
+    display: flex;
+    gap: 8px;
+    flex: 1.2;
+}
+
+.ctrl-btn {
+    flex: 1;
+    background-color: #262626;
+    color: #00ff00;
+    border: 2px solid #00ff00;
+    padding: clamp(10px, 2vh, 15px) 8px;
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    font-family: inherit;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.ctrl-btn:active {
+    background-color: #00ff00;
+    color: #000;
+}
+
+.fire-btn {
+    flex: 1;
+    background-color: #331111;
+    color: #ff4444;
+    border-color: #ff4444;
+    font-size: clamp(1rem, 3.2vw, 1.2rem);
+}
+
+.fire-btn:active {
+    background-color: #ff4444;
+    color: #fff;
+}
+
+.controls {
+    color: #aaa;
+    font-size: clamp(0.72rem, 2.2vw, 0.9rem);
+    line-height: 1.4;
+}
+
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+.btn {
+    background-color: #00ff00;
+    color: #000;
+    border: none;
+    padding: 12px 26px;
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    border-radius: 6px;
+}
+
+.btn:hover, .btn:active { background-color: #00cc00; }
+.win-msg { color: #00ff00; font-size: clamp(1.3rem, 5vw, 2.1rem); font-weight: bold; }
+.lose-msg { color: #ff3333; font-size: clamp(1.3rem, 5vw, 2.1rem); font-weight: bold; }
+
+/* Landscape Mobile Optimization (short screen height) */
+@media (max-height: 500px) and (orientation: landscape) {
+    .game-container {
+        width: min(98vw, 820px);
+        padding: 10px 16px;
+    }
+    h1 {
+        font-size: 1.2rem;
+        margin-bottom: 6px;
+    }
+    .hud {
+        padding: 5px;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+    .battlefield {
+        padding: 6px 10px;
+        margin-bottom: 8px;
+        gap: 2px;
+    }
+    .lane {
+        height: 36px;
+    }
+    .player, .zombie {
+        width: 26px;
+        height: 26px;
+    }
+    .mobile-controls {
+        margin-bottom: 4px;
+    }
+    .ctrl-btn {
+        padding: 8px;
+    }
+    .controls {
+        display: none; /* Hides helper text in tight landscape view so buttons fit cleanly */
+    }
+}
