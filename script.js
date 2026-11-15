@@ -23,6 +23,7 @@ let hp = CONFIG.STARTING_HP;
 let score = 0;
 let zombiePos = [getRandomSpawnPos(), getRandomSpawnPos(), getRandomSpawnPos()];
 let gameOver = false;
+let isPaused = false;
 let gameLoop = null;
 let lastShotTime = 0;
 
@@ -101,6 +102,35 @@ function triggerDamageShake() {
     }, 300);
 }
 
+// Updates both Top Pause/Resume and Bottom Play buttons
+function syncPauseUI() {
+    const topPauseBtn = document.getElementById('btn-pause-top');
+    const bottomPlayBtn = document.getElementById('btn-play-bottom');
+    const battlefield = document.getElementById('battlefield');
+
+    if (isPaused) {
+        if (topPauseBtn) {
+            topPauseBtn.innerText = '▶ RESUME';
+            topPauseBtn.classList.add('paused-active');
+        }
+        if (bottomPlayBtn) {
+            bottomPlayBtn.innerText = '▶ PLAY';
+            bottomPlayBtn.classList.add('paused-active');
+        }
+        if (battlefield) battlefield.classList.add('paused');
+    } else {
+        if (topPauseBtn) {
+            topPauseBtn.innerText = '⏸ PAUSE';
+            topPauseBtn.classList.remove('paused-active');
+        }
+        if (bottomPlayBtn) {
+            bottomPlayBtn.innerText = '⏸ PAUSE';
+            bottomPlayBtn.classList.remove('paused-active');
+        }
+        if (battlefield) battlefield.classList.remove('paused');
+    }
+}
+
 // Renders the fluid CSS Grid cells across all screen sizes
 function updateScreen() {
     if (gameOver) return;
@@ -144,25 +174,25 @@ function updateScreen() {
 
 // Unified Player Actions
 function moveUp() {
-    if (gameOver) return;
+    if (gameOver || isPaused) return;
     playerRow = Math.max(0, playerRow - 1);
     updateScreen();
 }
 
 function moveDown() {
-    if (gameOver) return;
+    if (gameOver || isPaused) return;
     playerRow = Math.min(2, playerRow + 1);
     updateScreen();
 }
 
 function selectLane(row) {
-    if (gameOver) return;
+    if (gameOver || isPaused) return;
     playerRow = Math.max(0, Math.min(2, row));
     updateScreen();
 }
 
 function fireGun() {
-    if (gameOver) return;
+    if (gameOver || isPaused) return;
 
     const now = Date.now();
     if (now - lastShotTime < CONFIG.FIRE_COOLDOWN_MS) return;
@@ -199,9 +229,57 @@ function fireGun() {
     }, 160);
 }
 
+// Toggle Pause / Resume (used by Top-Left Pause/Resume)
+function togglePause() {
+    if (gameOver) return;
+    isPaused = !isPaused;
+
+    if (isPaused) {
+        clearInterval(gameLoop);
+    } else {
+        startGameLoop();
+    }
+    syncPauseUI();
+}
+
+// Bottom-Right Play Button (Resumes if paused, or starts fresh if exited/ended)
+function playGame() {
+    if (gameOver) {
+        resetGame();
+        return;
+    }
+    if (isPaused) {
+        isPaused = false;
+        startGameLoop();
+        syncPauseUI();
+    } else {
+        togglePause();
+    }
+}
+
+// Top-Right Exit Game (X)
+function exitGame() {
+    gameOver = true;
+    isPaused = false;
+    clearInterval(gameLoop);
+    clearTimeout(effectTimer);
+    clearTimeout(shakeTimer);
+
+    const container = document.getElementById('game-container');
+    if (container) container.classList.remove('damage-shake');
+
+    const gameScreen = document.getElementById('game-screen');
+    const endScreen = document.getElementById('end-screen');
+    const exitScreen = document.getElementById('exit-screen');
+
+    if (gameScreen) gameScreen.classList.remove('active');
+    if (endScreen) endScreen.classList.remove('active');
+    if (exitScreen) exitScreen.classList.add('active');
+}
+
 // Automatic Zombie March Loop
 function moveZombies() {
-    if (gameOver) return;
+    if (gameOver || isPaused) return;
     let tookDamage = false;
     bitingRow = -1;
 
@@ -237,6 +315,7 @@ function startGameLoop() {
 
 function endGame() {
     gameOver = true;
+    isPaused = false;
     clearInterval(gameLoop);
     clearTimeout(effectTimer);
     clearTimeout(shakeTimer);
@@ -244,15 +323,22 @@ function endGame() {
     const container = document.getElementById('game-container');
     if (container) container.classList.remove('damage-shake');
 
-    document.getElementById('game-screen').classList.remove('active');
+    const gameScreen = document.getElementById('game-screen');
+    const exitScreen = document.getElementById('exit-screen');
     const endScreen = document.getElementById('end-screen');
     const endMsg = document.getElementById('end-message');
-    endScreen.classList.add('active');
 
-    if (hp > 0) {
-        endMsg.innerHTML = '<div class="win-msg">🎉 VICTORY! YOU WIN! 🎉</div><p>You held the line against the horde!</p>';
-    } else {
-        endMsg.innerHTML = '<div class="lose-msg">💀 GAME OVER! YOU DIED! 💀</div><p>A zombie reached you and killed you!</p>';
+    if (gameScreen) gameScreen.classList.remove('active');
+        if (gameScreen) gameScreen.classList.remove('active');
+    if (exitScreen) exitScreen.classList.remove('active');
+    if (endScreen) endScreen.classList.add('active');
+
+    if (endMsg) {
+        if (hp > 0) {
+            endMsg.innerHTML = '<div class="win-msg">🎉 VICTORY! YOU WIN! 🎉</div><p>You held the line against the horde!</p>';
+        } else {
+            endMsg.innerHTML = '<div class="lose-msg">💀 GAME OVER! YOU DIED! 💀</div><p>A zombie reached you and killed you!</p>';
+        }
     }
 }
 
@@ -262,6 +348,7 @@ function resetGame() {
     score = 0;
     zombiePos = [getRandomSpawnPos(), getRandomSpawnPos(), getRandomSpawnPos()];
     gameOver = false;
+    isPaused = false;
     laserRow = -1;
     bitingRow = -1;
     hitExplosion = { row: -1, pos: -1 };
@@ -271,16 +358,30 @@ function resetGame() {
     const container = document.getElementById('game-container');
     if (container) container.classList.remove('damage-shake');
 
-    document.getElementById('end-screen').classList.remove('active');
-    document.getElementById('game-screen').classList.add('active');
+    syncPauseUI();
+
+    const endScreen = document.getElementById('end-screen');
+    const exitScreen = document.getElementById('exit-screen');
+    const gameScreen = document.getElementById('game-screen');
+
+    if (endScreen) endScreen.classList.remove('active');
+    if (exitScreen) exitScreen.classList.remove('active');
+    if (gameScreen) gameScreen.classList.add('active');
+
     updateScreen();
     startGameLoop();
 }
 
-// Keyboard Controller
 window.addEventListener('keydown', function(e) {
-    if (gameOver) return;
     const key = e.key.toLowerCase();
+
+    if (key === 'p' || key === 'escape') {
+        e.preventDefault();
+        togglePause();
+        return;
+    }
+
+    if (gameOver || isPaused) return;
 
     if (key === 'w' || key === 'arrowup') {
         e.preventDefault();
@@ -294,7 +395,6 @@ window.addEventListener('keydown', function(e) {
     }
 });
 
-// Touch & Click Button Bindings
 function bindTouchButton(id, action) {
     const btn = document.getElementById(id);
     if (!btn) return;
@@ -308,7 +408,14 @@ function bindTouchButton(id, action) {
 bindTouchButton('btn-up', moveUp);
 bindTouchButton('btn-down', moveDown);
 bindTouchButton('btn-fire', fireGun);
+bindTouchButton('btn-pause-top', togglePause);
+bindTouchButton('btn-exit-top', exitGame);
+bindTouchButton('btn-reset-bottom', resetGame);
+bindTouchButton('btn-play-bottom', playGame);
+bindTouchButton('btn-play-again', resetGame);
+bindTouchButton('btn-relaunch', resetGame);
 
-// Initial boot execution
+syncPauseUI();
 updateScreen();
 startGameLoop();
+

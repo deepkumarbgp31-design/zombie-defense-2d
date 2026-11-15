@@ -7,16 +7,25 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="game-container" id="game-container">
+    <div id="game-container" class="game-container">
         <h1>ZOMBIE DEFENSE 2D</h1>
-        
+
+        <!-- Active Game Screen -->
         <div id="game-screen" class="screen active">
             <div class="hud">
-                <div class="hp">HP: <span id="hp-val">100%</span></div>
-                <div class="score">SCORE: <span id="score-val">0 / 50</span></div>
+                <div>HP: <span id="hp-val" class="hp">100%</span></div>
+                <div>SCORE: <span id="score-val" class="score">0 / 50</span></div>
             </div>
 
-            <div class="battlefield">
+            <!-- Play/Pause, Reset & Exit Controls -->
+            <div class="game-actions">
+                <button id="btn-pause" class="action-btn">⏸ PAUSE</button>
+                <button id="btn-reset" class="action-btn">🔄 RESET</button>
+                <button id="btn-exit" class="action-btn exit-btn">🚪 EXIT</button>
+            </div>
+
+            <!-- 3-Lane Battlefield -->
+            <div id="battlefield" class="battlefield">
                 <div class="lane" onclick="selectLane(0)">
                     <div id="p-0" class="player-space"></div>
                     <div id="t-0" class="track-space"></div>
@@ -34,21 +43,29 @@
             <!-- Touch & Mouse Controls -->
             <div class="mobile-controls">
                 <div class="move-btns">
-                    <button type="button" class="ctrl-btn" id="btn-up" aria-label="Move Up">▲ UP</button>
-                    <button type="button" class="ctrl-btn" id="btn-down" aria-label="Move Down">▼ DOWN</button>
+                    <button id="btn-up" class="ctrl-btn">▲ UP</button>
+                    <button id="btn-down" class="ctrl-btn">▼ DOWN</button>
                 </div>
-                <button type="button" class="ctrl-btn fire-btn" id="btn-fire" aria-label="Fire Gun">🔥 FIRE</button>
+                <button id="btn-fire" class="ctrl-btn fire-btn">🔥 FIRE</button>
             </div>
 
             <div class="controls">
-                <strong>Desktop:</strong> W / S (or Arrows) to Move • Spacebar to Shoot<br>
+                <strong>Desktop:</strong> W / S (or Arrows) to Move • Spacebar to Shoot • P to Pause<br>
                 <strong>Touch:</strong> Tap any lane or use buttons above
             </div>
         </div>
 
+        <!-- Victory / Game Over Screen -->
         <div id="end-screen" class="screen">
             <div id="end-message"></div>
-            <button type="button" class="btn" onclick="resetGame()">Play Again</button>
+            <button id="btn-play-again" class="btn">Play Again</button>
+        </div>
+
+        <!-- Exit Screen -->
+        <div id="exit-screen" class="screen">
+            <div class="lose-msg">🚪 GAME EXITED</div>
+            <p>Thanks for holding the line against the horde!</p>
+            <button id="btn-relaunch" class="btn">▶ Start New Game</button>
         </div>
     </div>
 
